@@ -24,7 +24,31 @@ module.exports = {
         }
       }
     ]
-  }
+  },
+  plugins: [
+    new webpack.BannerPlugin({
+      banner: `
+        Build Date: ${new Date().toLocaleString()}
+        Commit Version: ${childProcess.execSync('git rev-parse --short HEAD')}
+        Author Version: ${childProcess.execSync('git config user.name')}
+
+        `
+    }), new webpack.DefinePlugin({
+      TWO: JSON.stringify('1+1'),
+      'api.domain': JSON.stringify('http://dev.api.domain.com')
+    }),
+    new HtmlWebpackPlugin({
+      template: "./src/index.html",
+      templateParameters: {
+        env: process.env.NODE_ENV === 'development' ? '(개발용)': ''
+      },
+      minify: process.env.NODE_ENV === 'production' ? {
+        collapseWhitespace: true,
+        removeComments: true,
+      } : false,
+    }),
+    new CleanWebpackPlugin(),
+    ...(process.env.NODE_ENV === 'production' ? [new MiniCssExtractPlugin({filename: '[name].css'})] : [])
   /**
    * TODO: 아래 플러그인을 추가해서 번들 결과를 만들어 보세요.
    * 1. BannerPlugin: 결과물에 빌드 시간을 출력하세요.
